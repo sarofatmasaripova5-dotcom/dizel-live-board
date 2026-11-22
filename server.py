@@ -8,14 +8,30 @@ TEACHER=os.getenv("TEACHER_CODE") or secrets.token_urlsafe(12)
 CLASS=os.getenv("CLASS_CODE") or secrets.token_urlsafe(6)
 NAMES=["ABDULLAYEV IN'OMJON","AZIMBAYEV FURQAT","BAXITOV AYBEK","BOLTAYEV ERGASH","EGAMOV ALISHER","ISMOILOV DIYDORBEK","KALANDAROV NOSIR","MURATOV TOXIRJON","RAJABOV NAVRO‘ZBEK","RAXIMOV RUSTAMBEK","SAFOYEV SIROJBEK","SAIDOV SHOHRUH","SHARIPOV UMRBEK","TURIMBETOVA SARBINAZ","XALILLAYEV SHAHRIYOR","YUREV MUNISBEK"]
 TASKS=[
-"ρ25=831 kg/m³, γ=0.725 kg/(m³·°C). ρ15 ni hisoblang.",
-"ρ30=826 kg/m³, γ=0.70 kg/(m³·°C). ρ20 ni toping.",
-"V=12 m³, ρ=835 kg/m³. Massani toping.",
-"m=25050 kg, ρ=835 kg/m³. Hajmni toping.",
-"6000 L: 845 kg/m³; 4000 L: 825 kg/m³. Aralashma zichligini toping.",
-"B7: 93% dizel (835 kg/m³), 7% FAME (883 kg/m³). Aralashma zichligini toping."
+"1. Formulani to‘ldir: m=2505 kg, V=3 m³. Zichlikni hisoblang.",
+"2. Xatoni top: m=1000 kg, ρ=800 kg/m³. Bir talaba V=m·ρ deb yozgan. To‘g‘ri hisoblang.",
+"3. Blits: ρ=840 kg/m³, V=5 m³. Massani toping.",
+"4. Moslik: A) massa, B) hajm, C) zichlik. Berilgan m=1670 kg va ρ=835 kg/m³; hajmni toping.",
+"5. Harorat tuzatmasi: ρ25=831 kg/m³, γ=0.725 kg/(m³·°C). ρ15 ni hisoblang.",
+"6. Hisoblash zanjiri: m=16700 kg, ρ=835 kg/m³. Hajmni va teng 2 ta sig‘im hajmini toping.",
+"7. Kim tez? 1-guruh: m=12480 kg, V=15 m³; 2-guruh: m=16640 kg, V=20 m³. Zichliklarni solishtiring.",
+"8. Keys: 6000 L, ρ1=845 kg/m³ va 4000 L, ρ2=825 kg/m³. Aralashma zichligini hisoblang.",
+"9. B7 aralashma: 93 hajmiy % dizel, ρd=835 kg/m³; 7 hajmiy % FAME, ρf=883 kg/m³. Zichlikni toping.",
+"10. Mustaqil tekshiruv: ρ30=826 kg/m³, γ=0.70 kg/(m³·°C). ρ20 ni hisoblang."
 ]
-ANS=[838.25,833,10020,30,837,838.36]
+FORMULAS=[
+"ρ = m / V",
+"V = m / ρ   (V = m · ρ — noto‘g‘ri)",
+"m = ρ · V",
+"m = ρ · V;   V = m / ρ;   ρ = m / V",
+"ρ15 = ρ25 + γ · (25 − 15)",
+"V = m / ρ;   V_bitta = V / 2",
+"ρ1 = m1 / V1;   ρ2 = m2 / V2",
+"ρ_aralashma = (ρ1 · V1 + ρ2 · V2) / (V1 + V2)",
+"ρ_B7 = 0.93 · ρd + 0.07 · ρf",
+"ρ20 = ρ30 + γ · (30 − 20)"
+]
+ANS=[835,1.25,4200,2,838.25,20,832,837,838.36,833]
 board=[{"strokes":[],"teacher_strokes":[],"task":None,"answer":"","grade":None,"comment":"","online":False} for _ in NAMES]
 clients=defaultdict(set); student_sockets=defaultdict(set); global_task=0
 async def send(ws,obj):
@@ -50,10 +66,10 @@ async def ws_endpoint(ws:WebSocket):
   clients[role].add(ws)
   if role=="student":
    student_sockets[idx].add(ws);board[idx]["online"]=True
-  if role=="teacher": await send(ws,{"type":"init","role":role,"names":NAMES,"tasks":TASKS,"boards":board,"global_task":global_task})
+  if role=="teacher": await send(ws,{"type":"init","role":role,"names":NAMES,"tasks":TASKS,"formulas":FORMULAS,"boards":board,"global_task":global_task})
   else:
    b=board[idx]
-   await send(ws,{"type":"init","role":role,"names":NAMES,"tasks":TASKS,"global_task":global_task,"board":b,"student":idx})
+   await send(ws,{"type":"init","role":role,"names":NAMES,"tasks":TASKS,"formulas":FORMULAS,"global_task":global_task,"board":b,"student":idx})
   await broadcast({"type":"presence","online":[b["online"] for b in board]},"teacher")
   while True:
    m=await ws.receive_json();t=m.get("type")
