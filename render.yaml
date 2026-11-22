@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: dizel-live-board-16
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: TEACHER_CODE
+        generateValue: true
+      - key: CLASS_CODE
+        generateValue: true
